@@ -11,6 +11,14 @@ function PreferencesLoader() {
 function App() {
   return (
     <>
+      {/* Sin un <Helmet> "por defecto" aquí a propósito: react-helmet-async
+          agrega sus propias etiquetas pero no borra las de otra instancia
+          que siga montada, así que un <meta name="description"> puesto en
+          este nivel (padre, nunca se desmonta) y otro en `Seo.jsx` (cada
+          página pública) terminan coexistiendo como dos nodos — y el
+          buscador, o `querySelector`, se queda con el primero, no con el
+          más específico. Cada página pública pone el suyo con `<Seo>`; las
+          privadas, detrás de login y fuera de robots.txt, no necesitan uno. */}
       <PreferencesLoader />
       <Toaster position="top-left" reverseOrder={false} />
       <AppRouter />

@@ -4,6 +4,7 @@ import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import SectionHeading from '../../Components/molecules/marketing/SectionHeading';
 import Reveal from '../../Components/molecules/marketing/Reveal';
 import ContactForm from '../../Components/organisms/marketing/ContactForm';
+import Seo from '../../Components/Seo';
 
 import { CONTACTO } from '../../data/marketing';
 
@@ -23,6 +24,12 @@ const expectativas = [
 const ContactPage = () => {
   return (
     <>
+      <Seo
+        title="Contacto"
+        description="Solicita una demostración de Planitica: 30 minutos para entender cómo llevas la planilla hoy y una propuesta con el plan recomendado. Un producto de Savegre Soft."
+        path="/contacto"
+      />
+
       {/* Encabezado */}
       <section className="relative overflow-hidden border-b border-stroke-soft bg-surface">
         <span

@@ -7,6 +7,7 @@ import PricingCard from '../../Components/molecules/marketing/PricingCard';
 import FaqItem from '../../Components/molecules/marketing/FaqItem';
 import Reveal from '../../Components/molecules/marketing/Reveal';
 import CtaBanner from '../../Components/organisms/marketing/CtaBanner';
+import Seo from '../../Components/Seo';
 
 import { COMPARATIVO, FAQS, PLANES } from '../../data/marketing';
 
@@ -49,6 +50,12 @@ const PricingPage = () => {
 
   return (
     <>
+      <Seo
+        title="Precios y planes"
+        description="Planes de Planitica para empresas costarricenses, según cuántos colaboradores tienes y qué módulos necesitas. Un producto de Savegre Soft."
+        path="/precios"
+      />
+
       {/* Encabezado */}
       <section className="relative overflow-hidden border-b border-stroke-soft bg-surface">
         <span

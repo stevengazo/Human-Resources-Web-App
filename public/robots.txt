@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /manager
+Disallow: /my-profile
+Disallow: /my-kpis
+Disallow: /my-comissions
+Disallow: /my-payrolls
+Disallow: /my-loans
+Disallow: /my-evaluations
+Disallow: /messages
+Disallow: /settings
+Disallow: /payroll
+Disallow: /ui
+
+Sitemap: https://planitica.savegresoft.com/sitemap.xml

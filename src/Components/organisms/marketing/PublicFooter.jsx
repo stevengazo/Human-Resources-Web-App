@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Clock, Mail, MapPin, Phone, Users } from 'lucide-react';
-import { CONTACTO, PRODUCTO } from '../../../data/marketing';
+import { CASA_MATRIZ, CONTACTO, PRODUCTO } from '../../../data/marketing';
 
 const columnas = [
   {
@@ -62,6 +62,18 @@ const PublicFooter = () => {
               {PRODUCTO.descripcion}
             </p>
 
+            <p className="mt-3 text-xs text-gray-500">
+              Un producto de{' '}
+              <a
+                href={CASA_MATRIZ.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-gray-400 transition-colors hover:text-white"
+              >
+                {CASA_MATRIZ.nombre}
+              </a>
+            </p>
+
             <ul className="mt-6 space-y-2.5 text-sm">
               <li className="flex items-center gap-2.5">
                 <Mail size={16} className="shrink-0 text-brand-300" />
@@ -115,7 +127,7 @@ const PublicFooter = () => {
                      border-t border-white/10 pt-6 text-xs text-gray-500 sm:flex-row"
         >
           <p>
-            © {anio} {PRODUCTO.nombre}. Todos los derechos reservados.
+            © {anio} {CASA_MATRIZ.nombre}. Todos los derechos reservados.
           </p>
           <p>Hecho en Costa Rica · React 19 + .NET 9 + SQL Server</p>
         </div>

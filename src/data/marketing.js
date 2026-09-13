@@ -47,6 +47,18 @@ export const PRODUCTO = {
   claimResaltado: 'sin hojas de cálculo',
   descripcion:
     'Expediente digital, planilla, ausencias, préstamos y desempeño en un solo sistema, hecho para la legislación y la forma de trabajar de Costa Rica.',
+  /** Dominio propio del producto — base de las URLs canónicas y Open Graph (ver `Seo.jsx`). */
+  dominio: 'https://planitica.savegresoft.com',
+};
+
+/**
+ * Casa matriz. Se muestra en el pie del sitio público y en los datos
+ * estructurados (JSON-LD) que leen los buscadores — un único lugar para no
+ * tener que repetir el nombre y la URL en cada página.
+ */
+export const CASA_MATRIZ = {
+  nombre: 'Savegre Soft',
+  url: 'https://savegresoft.com',
 };
 
 /** Datos de contacto que se muestran en el footer y en la página de contacto. */

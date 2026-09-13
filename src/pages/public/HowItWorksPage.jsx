@@ -6,6 +6,7 @@ import StepCard from '../../Components/molecules/marketing/StepCard';
 import CtaButton from '../../Components/molecules/marketing/CtaButton';
 import Reveal from '../../Components/molecules/marketing/Reveal';
 import CtaBanner from '../../Components/organisms/marketing/CtaBanner';
+import Seo from '../../Components/Seo';
 
 import { ARQUITECTURA, PASOS } from '../../data/marketing';
 
@@ -68,6 +69,11 @@ const GARANTIAS = [
 const HowItWorksPage = () => {
   return (
     <>
+      <Seo
+        title="Cómo funciona"
+        description="De la hora extra al comprobante de pago: cómo viaja un dato dentro de Planitica, su arquitectura y cómo se implementa en tu empresa. Un producto de Savegre Soft."
+        path="/como-funciona"
+      />
       {/* Encabezado */}
       <section className="relative overflow-hidden border-b border-stroke-soft bg-surface">
         <span

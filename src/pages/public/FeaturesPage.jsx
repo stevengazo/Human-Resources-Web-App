@@ -6,6 +6,7 @@ import FeatureCard from '../../Components/molecules/marketing/FeatureCard';
 import CtaButton from '../../Components/molecules/marketing/CtaButton';
 import Reveal from '../../Components/molecules/marketing/Reveal';
 import CtaBanner from '../../Components/organisms/marketing/CtaBanner';
+import Seo from '../../Components/Seo';
 
 import { GRUPOS_MODULOS, MODULOS } from '../../data/marketing';
 
@@ -15,6 +16,12 @@ const porGrupo = (id) => MODULOS.filter((m) => m.grupo === id);
 const FeaturesPage = () => {
   return (
     <>
+      <Seo
+        title="Características y módulos"
+        description="Expediente digital, planilla, ausencias, préstamos, comisiones, KPIs y evaluaciones psicométricas: los módulos de Planitica, el sistema de RR. HH. de Savegre Soft para Costa Rica."
+        path="/caracteristicas"
+      />
+
       {/* Encabezado */}
       <section className="relative overflow-hidden border-b border-stroke-soft bg-surface">
         <span

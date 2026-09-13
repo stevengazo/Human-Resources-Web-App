@@ -10,6 +10,7 @@ import CtaButton from '../../Components/molecules/marketing/CtaButton';
 import Reveal from '../../Components/molecules/marketing/Reveal';
 import AppPreview from '../../Components/organisms/marketing/AppPreview';
 import CtaBanner from '../../Components/organisms/marketing/CtaBanner';
+import Seo from '../../Components/Seo';
 
 import {
   CIFRAS,
@@ -34,6 +35,12 @@ const planMasBarato = Math.min(
 const LandingPage = () => {
   return (
     <>
+      <Seo
+        title="La planilla tica, sin hojas de cálculo"
+        description="Planitica es el sistema de Recursos Humanos hecho para Costa Rica: expediente digital, planilla, ausencias, préstamos y desempeño en un solo lugar. Un producto de Savegre Soft."
+        path="/"
+      />
+
       {/* ============================= HERO ============================= */}
       <section className="relative overflow-hidden">
         {/* Halos decorativos de marca */}
