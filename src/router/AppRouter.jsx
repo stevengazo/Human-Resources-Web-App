@@ -22,6 +22,7 @@ import LoginPage from '../pages/LoginPage';
 import SelectCompanyPage from '../pages/SelectCompanyPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import RegisterPage from '../pages/RegisterPage';
+import AcceptInvitePage from '../pages/AcceptInvitePage';
 import UILibraryPage from '../pages/UILibraryPage';
 import EmployeesPage from '../pages/EmployeesPage';
 import ManagerPage from '../pages/ManagerPage';
@@ -76,6 +77,7 @@ const AppRouter = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/select-company" element={<SelectCompanyPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/invite/:token" element={<AcceptInvitePage />} />
         {/* Rutas privadas con layout - Empleados */}
         <Route element={<MainLayout />}>
           <Route path="/my-profile" element={<MyProfilePage />} />

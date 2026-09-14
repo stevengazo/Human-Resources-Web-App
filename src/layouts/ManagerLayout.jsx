@@ -7,6 +7,7 @@ import ThemeToggle from '../Components/ThemeToggle';
 import Logo from '../Components/Logo';
 import NotificationsPanel from '../Components/organisms/NotificationsPanel';
 import ChatWidget from '../Components/organisms/messaging/ChatWidget';
+import CompanySwitcher from '../Components/molecules/CompanySwitcher';
 
 const ManagerLayout = () => {
   const { hasRole, isAuthenticated, authLoading } = useAppContext();
@@ -56,6 +57,8 @@ const ManagerLayout = () => {
           <h1 className="hidden shrink-0 text-base font-semibold text-ink sm:block">
             Panel de Gestión
           </h1>
+
+          <CompanySwitcher />
 
           {/* Buscador global */}
           <div className="flex flex-1 justify-center md:justify-end">

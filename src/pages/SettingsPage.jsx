@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Palette, Plug, Shield, Sparkles, Webhook } from 'lucide-react';
+import { Mail, Palette, Plug, Send, Shield, Sparkles, Webhook } from 'lucide-react';
 
 import PageTitle from '../Components/PageTitle';
 import Divider from '../Components/Divider';
@@ -9,6 +9,8 @@ import EmailSettings from '../Components/organisms/EmailSettings';
 import WebhookSettings from '../Components/organisms/WebhookSettings';
 import McpSettings from '../Components/organisms/McpSettings';
 import RolesSettings from '../Components/organisms/RolesSettings';
+import CompanyInvitations from '../Components/organisms/CompanyInvitations';
+import { useAppContext } from '../context/AppContext';
 
 const TABS = {
   APARIENCIA: 'apariencia',
@@ -17,6 +19,7 @@ const TABS = {
   WEBHOOKS: 'webhooks',
   MCP: 'mcp',
   ROLES: 'roles',
+  INVITACIONES: 'invitaciones',
 };
 
 const SECCIONES = [
@@ -26,6 +29,7 @@ const SECCIONES = [
   { id: TABS.WEBHOOKS, label: 'Webhooks', icon: Webhook, Panel: WebhookSettings },
   { id: TABS.MCP, label: 'MCP', icon: Plug, Panel: McpSettings },
   { id: TABS.ROLES, label: 'Roles y permisos', icon: Shield, Panel: RolesSettings },
+  { id: TABS.INVITACIONES, label: 'Invitaciones', icon: Send, Panel: CompanyInvitations, soloAdmin: true },
 ];
 
 /**
@@ -34,9 +38,11 @@ const SECCIONES = [
  * La navegación es una lista vertical a la izquierda; el contenido a la derecha.
  */
 const SettingsPage = () => {
+  const { hasRole } = useAppContext();
   const [tab, setTab] = useState(TABS.APARIENCIA);
 
-  const actual = SECCIONES.find((s) => s.id === tab) ?? SECCIONES[0];
+  const secciones = SECCIONES.filter((s) => !s.soloAdmin || hasRole('Admin'));
+  const actual = secciones.find((s) => s.id === tab) ?? secciones[0];
   const Panel = actual.Panel;
 
   return (
@@ -53,7 +59,7 @@ const SettingsPage = () => {
       <div className="grid gap-6 md:grid-cols-[220px_1fr]">
         {/* Lista vertical */}
         <nav className="flex flex-col gap-1 md:sticky md:top-20 md:self-start">
-          {SECCIONES.map(({ id, label, icon: Icon }) => {
+          {secciones.map(({ id, label, icon: Icon }) => {
             const activo = id === tab;
             return (
               <button

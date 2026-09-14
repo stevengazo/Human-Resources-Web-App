@@ -67,6 +67,44 @@ const logoutRequest = () => {
   return apiClient.post('/Authentication/logout');
 };
 
+/**
+ * Inicia sesión o registra una cuenta con el id_token que devuelve Google
+ * Identity Services. `companyName` solo hace falta cuando el backend responde
+ * `requiresCompanyName` (cuenta de Google que no matchea ninguna existente).
+ */
+const googleAuthRequest = ({ idToken, companyName }) => {
+  return apiClient.post('/Authentication/google', { idToken, companyName });
+};
+
+/** Vincula Google a la sesión ya iniciada (perfil → "Cuentas vinculadas"). */
+const linkGoogleRequest = (idToken) => {
+  return apiClient.post('/Authentication/google/link', { idToken });
+};
+
+/** Desvincula Google de la sesión activa. */
+const unlinkGoogleRequest = () => {
+  return apiClient.post('/Authentication/google/unlink');
+};
+
+/** Proveedores externos vinculados a la sesión activa y si tiene contraseña. */
+const getExternalLoginsRequest = () => {
+  return apiClient.get('/Authentication/external-logins');
+};
+
+/** Establece una contraseña para cuentas creadas sin una (solo con Google). */
+const setPasswordRequest = (newPassword) => {
+  return apiClient.post('/Authentication/set-password', { newPassword });
+};
+
+/**
+ * Crea un espacio de trabajo adicional para la cuenta ya identificada (la
+ * cookie de identidad alcanza, no hace falta tener una empresa activa) y
+ * devuelve la sesión completa en esa empresa nueva.
+ */
+const createCompanyRequest = (companyName) => {
+  return apiClient.post('/Authentication/create-company', { companyName });
+};
+
 export {
   loginRequest,
   registerRequest,
@@ -74,4 +112,10 @@ export {
   myCompaniesRequest,
   refreshRequest,
   logoutRequest,
+  googleAuthRequest,
+  linkGoogleRequest,
+  unlinkGoogleRequest,
+  getExternalLoginsRequest,
+  setPasswordRequest,
+  createCompanyRequest,
 };

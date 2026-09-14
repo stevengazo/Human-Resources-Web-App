@@ -4,6 +4,7 @@ import {
   refreshRequest,
   logoutRequest,
   selectCompanyRequest,
+  createCompanyRequest,
 } from '../api/authApi';
 
 /**
@@ -105,6 +106,13 @@ export const AppProvider = ({ children }) => {
     return data;
   };
 
+  /** Crea un espacio de trabajo adicional (desde el selector) y entra directo en él. */
+  const createCompany = async (companyName) => {
+    const { data } = await createCompanyRequest(companyName);
+    aplicarSesion(data);
+    return data;
+  };
+
   /**
    * =====================================================
    * logout
@@ -144,6 +152,7 @@ export const AppProvider = ({ children }) => {
         hasAnyRole,
         beginCompanySelection,
         selectCompany,
+        createCompany,
       }}
     >
       {children}

@@ -1,19 +1,23 @@
 import { motion } from 'framer-motion';
 import { Mail, Lock, UserPlus, Building2 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { registerRequest } from '../api/authApi';
+import { registerRequest, googleAuthRequest } from '../api/authApi';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
+import GoogleButton from '../Components/molecules/GoogleButton';
 
 const RegisterPage = () => {
   const Nav = useNavigate();
+  const { beginCompanySelection } = useAppContext();
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
     password: '',
     companyName: '',
   });
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,6 +43,35 @@ const RegisterPage = () => {
 
       toast.error(msg);
       console.error(error);
+    }
+  };
+
+  const handleGoogleCredential = async (idToken) => {
+    if (!newUser.companyName.trim()) {
+      toast.error('Escribe primero el nombre de tu empresa');
+      return;
+    }
+
+    setGoogleLoading(true);
+    try {
+      const { data } = await googleAuthRequest({
+        idToken,
+        companyName: newUser.companyName,
+      });
+
+      // Login/registro con Google siempre termina en el selector de
+      // espacio de trabajo (ver LoginPage), aunque sea el único.
+      beginCompanySelection(data.companies);
+      Nav('/select-company');
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data ||
+        'No se pudo crear la cuenta con Google';
+      toast.error(typeof msg === 'string' ? msg : 'No se pudo crear la cuenta con Google');
+      console.error(error);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -140,6 +173,21 @@ const RegisterPage = () => {
             Registrarse
           </motion.button>
         </form>
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="h-px flex-1 bg-slate-600" />
+          <span className="text-xs text-slate-400">o</span>
+          <div className="h-px flex-1 bg-slate-600" />
+        </div>
+
+        {googleLoading ? (
+          <p className="text-center text-sm text-slate-400">Creando cuenta...</p>
+        ) : (
+          <GoogleButton text="signup_with" onCredential={handleGoogleCredential} />
+        )}
+        <p className="mt-2 text-center text-xs text-slate-500">
+          Completa el nombre de la empresa arriba antes de usar Google.
+        </p>
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-slate-400">

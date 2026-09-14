@@ -1,19 +1,37 @@
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Building2 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 import { useAppContext } from '../context/AppContext';
-import { loginRequest } from '../api/authApi';
+import { loginRequest, googleAuthRequest } from '../api/authApi';
+import GoogleButton from '../Components/molecules/GoogleButton';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, beginCompanySelection } = useAppContext();
+  const { beginCompanySelection } = useAppContext();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Cuenta de Google sin empresa todavía: guarda el idToken mientras se pide
+  // el nombre de la empresa antes de reintentar.
+  const [pendingGoogleToken, setPendingGoogleToken] = useState(null);
+  const [googleCompanyName, setGoogleCompanyName] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  /**
+   * Todo login (usuario/contraseña, Google, invitación aceptada...) termina
+   * siempre en el selector de espacio de trabajo — estilo Bitrix24, aunque
+   * la cuenta tenga una sola empresa. La cookie "de solo identidad" ya la
+   * dejó el servidor.
+   */
+  const irAlSelector = (data) => {
+    beginCompanySelection(data.companies);
+    navigate('/select-company');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,23 +40,54 @@ const LoginPage = () => {
 
     try {
       const { data } = await loginRequest({ username, password });
-
-      if (data.requiresCompanySelection) {
-        // La cuenta pertenece a más de una empresa: falta elegir con cuál
-        // entrar, en su propia pantalla (como el selector de portal de
-        // Bitrix24). La cookie "de solo identidad" ya la dejó el servidor.
-        beginCompanySelection(data.companies);
-        navigate('/select-company');
-        return;
-      }
-
-      await login(data);
-      navigate('/my-profile');
+      irAlSelector(data);
     } catch (err) {
       console.error(err);
       setError('Usuario o contraseña incorrectos');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (idToken) => {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      const { data } = await googleAuthRequest({ idToken });
+
+      if (data.requiresCompanyName) {
+        setPendingGoogleToken(idToken);
+        return;
+      }
+
+      irAlSelector(data);
+    } catch (err) {
+      console.error(err);
+      setError('No se pudo iniciar sesión con Google');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleConfirmGoogleCompany = async (e) => {
+    e.preventDefault();
+    if (!pendingGoogleToken) return;
+
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      const { data } = await googleAuthRequest({
+        idToken: pendingGoogleToken,
+        companyName: googleCompanyName,
+      });
+      irAlSelector(data);
+    } catch (err) {
+      console.error(err);
+      setError('No se pudo crear la cuenta con Google');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -64,62 +113,117 @@ const LoginPage = () => {
           <p className="mb-4 text-sm text-red-400 text-center">{error}</p>
         )}
 
-        {/* Form */}
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Usuario */}
-          <div>
-            <label className="block text-sm text-slate-300 mb-1">
-              Usuario o correo
-            </label>
-            <div className="relative">
-              <Mail
-                className="absolute left-3 top-2.5 text-slate-400"
-                size={18}
-              />
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="usuario@empresa.com"
-                required
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-brand"
-              />
+        {pendingGoogleToken ? (
+          /* Cuenta de Google nueva: hace falta el nombre de la empresa antes de crearla. */
+          <form className="space-y-4" onSubmit={handleConfirmGoogleCompany}>
+            <p className="text-sm text-slate-300 text-center">
+              Vamos a crear tu cuenta con Google. ¿Cómo se llama tu empresa?
+            </p>
+            <div>
+              <label className="block text-sm text-slate-300 mb-1">
+                Nombre de la empresa
+              </label>
+              <div className="relative">
+                <Building2
+                  className="absolute left-3 top-2.5 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  value={googleCompanyName}
+                  onChange={(e) => setGoogleCompanyName(e.target.value)}
+                  placeholder="Mi Empresa S.A."
+                  required
+                  autoFocus
+                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
             </div>
-          </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              type="submit"
+              disabled={googleLoading}
+              className="w-full mt-2 flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover disabled:opacity-60 text-white py-2 rounded-lg font-medium transition"
+            >
+              {googleLoading ? 'Creando...' : 'Continuar'}
+            </motion.button>
+            <button
+              type="button"
+              onClick={() => setPendingGoogleToken(null)}
+              className="w-full text-center text-sm text-slate-400 hover:underline"
+            >
+              Cancelar
+            </button>
+          </form>
+        ) : (
+          <>
+            {/* Form */}
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              {/* Usuario */}
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">
+                  Usuario o correo
+                </label>
+                <div className="relative">
+                  <Mail
+                    className="absolute left-3 top-2.5 text-slate-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="usuario@empresa.com"
+                    required
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                </div>
+              </div>
 
-          {/* Contraseña */}
-          <div>
-            <label className="block text-sm text-slate-300 mb-1">
-              Contraseña
-            </label>
-            <div className="relative">
-              <Lock
-                className="absolute left-3 top-2.5 text-slate-400"
-                size={18}
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-brand"
-              />
+              {/* Contraseña */}
+              <div>
+                <label className="block text-sm text-slate-300 mb-1">
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <Lock
+                    className="absolute left-3 top-2.5 text-slate-400"
+                    size={18}
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                </div>
+              </div>
+
+              {/* Botón */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                className="w-full mt-2 flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover disabled:opacity-60 text-white py-2 rounded-lg font-medium transition"
+              >
+                <LogIn size={18} />
+                {loading ? 'Ingresando...' : 'Entrar'}
+              </motion.button>
+            </form>
+
+            <div className="flex items-center gap-3 my-5">
+              <div className="h-px flex-1 bg-slate-600" />
+              <span className="text-xs text-slate-400">o</span>
+              <div className="h-px flex-1 bg-slate-600" />
             </div>
-          </div>
 
-          {/* Botón */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover disabled:opacity-60 text-white py-2 rounded-lg font-medium transition"
-          >
-            <LogIn size={18} />
-            {loading ? 'Ingresando...' : 'Entrar'}
-          </motion.button>
-        </form>
+            <GoogleButton text="signin_with" onCredential={handleGoogleCredential} />
+          </>
+        )}
 
         {/* Footer */}
         <div className="mt-6 text-center text-sm text-slate-400 space-y-1">

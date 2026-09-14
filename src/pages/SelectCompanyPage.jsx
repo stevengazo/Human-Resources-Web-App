@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building2, ChevronRight, LogOut, Search } from 'lucide-react';
+import { Building2, ChevronRight, LogOut, Plus, Search } from 'lucide-react';
 
 import { useAppContext } from '../context/AppContext';
 import { myCompaniesRequest } from '../api/authApi';
+import { acceptInviteLoggedInRequest } from '../api/invitationsApi';
 import Logo from '../Components/Logo';
+
+/**
+ * `AcceptInvitePage` deja acá el token cuando el correo invitado ya tenía
+ * cuenta: hay que iniciar sesión primero (no hay otra forma de probar que la
+ * cuenta es suya), y esta página es donde cae cualquier login. Se consume
+ * una sola vez: si falla, no se reintenta solo.
+ */
+const CLAVE_INVITACION_PENDIENTE = 'rh:pending-invite';
 
 const inicialesDe = (nombre) =>
   (nombre || '?')
@@ -28,33 +37,61 @@ const inicialesDe = (nombre) =>
  */
 const SelectCompanyPage = () => {
   const navigate = useNavigate();
-  const { pendingCompanies, beginCompanySelection, selectCompany, logout } =
-    useAppContext();
+  const {
+    pendingCompanies,
+    beginCompanySelection,
+    selectCompany,
+    createCompany,
+    logout,
+  } = useAppContext();
 
   const [companies, setCompanies] = useState(pendingCompanies);
-  const [cargando, setCargando] = useState(!pendingCompanies);
+  const [cargando, setCargando] = useState(true);
   const [entrando, setEntrando] = useState(null);
   const [error, setError] = useState('');
   const [busqueda, setBusqueda] = useState('');
 
-  useEffect(() => {
-    if (pendingCompanies) {
-      setCompanies(pendingCompanies);
-      setCargando(false);
-      return;
-    }
+  const [creando, setCreando] = useState(false);
+  const [nombreNueva, setNombreNueva] = useState('');
+  const [guardandoNueva, setGuardandoNueva] = useState(false);
 
-    myCompaniesRequest()
-      .then(({ data }) => {
+  useEffect(() => {
+    const cargar = async () => {
+      // Invitación aceptada con "iniciá sesión primero": la cuenta ya está
+      // logueada (recién pasó por login), falta sumar la membresía. Se
+      // consume una sola vez y siempre se refresca la lista después, para
+      // que la empresa nueva aparezca aunque `pendingCompanies` ya tuviera
+      // datos (de antes de aceptar).
+      const tokenPendiente = sessionStorage.getItem(CLAVE_INVITACION_PENDIENTE);
+      if (tokenPendiente) {
+        sessionStorage.removeItem(CLAVE_INVITACION_PENDIENTE);
+        try {
+          await acceptInviteLoggedInRequest(tokenPendiente);
+        } catch (err) {
+          console.error('No se pudo aceptar la invitación pendiente:', err);
+        }
+      } else if (pendingCompanies) {
+        setCompanies(pendingCompanies);
+        setCargando(false);
+        return;
+      }
+
+      try {
+        const { data } = await myCompaniesRequest();
         if (!Array.isArray(data) || data.length === 0) {
           navigate('/login', { replace: true });
           return;
         }
         beginCompanySelection(data);
         setCompanies(data);
-      })
-      .catch(() => navigate('/login', { replace: true }))
-      .finally(() => setCargando(false));
+      } catch {
+        navigate('/login', { replace: true });
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargar();
     // Solo debe correr una vez, al montar: es la recuperación tras refrescar
     // (o la entrada directa a la página para cambiar de empresa).
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,6 +114,20 @@ const SelectCompanyPage = () => {
       console.error(err);
       setError('No se pudo entrar a esa empresa.');
       setEntrando(null);
+    }
+  };
+
+  const crearEmpresa = async (e) => {
+    e.preventDefault();
+    setError('');
+    setGuardandoNueva(true);
+    try {
+      await createCompany(nombreNueva);
+      navigate('/my-profile');
+    } catch (err) {
+      console.error(err);
+      setError('No se pudo crear la empresa.');
+      setGuardandoNueva(false);
     }
   };
 
@@ -184,6 +235,52 @@ const SelectCompanyPage = () => {
                 </li>
               )}
             </ul>
+
+            <div className="border-t border-stroke-soft p-2">
+              {creando ? (
+                <form onSubmit={crearEmpresa} className="space-y-2 px-2 py-2">
+                  <input
+                    type="text"
+                    value={nombreNueva}
+                    onChange={(e) => setNombreNueva(e.target.value)}
+                    placeholder="Nombre de la empresa"
+                    required
+                    autoFocus
+                    className="h-9 w-full rounded-md border border-stroke bg-surface px-3 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={guardandoNueva}
+                      className="h-8 flex-1 rounded-md bg-brand text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
+                    >
+                      {guardandoNueva ? 'Creando…' : 'Crear'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCreando(false)}
+                      className="h-8 flex-1 rounded-md border border-stroke text-sm font-medium text-ink hover:bg-canvas"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  disabled={entrando !== null}
+                  onClick={() => setCreando(true)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-canvas disabled:opacity-60"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-dashed border-stroke text-ink-muted">
+                    <Plus size={18} />
+                  </span>
+                  <span className="text-sm font-medium text-ink">
+                    Crear nueva empresa
+                  </span>
+                </button>
+              )}
+            </div>
 
             <div className="border-t border-stroke-soft px-6 py-3">
               <button

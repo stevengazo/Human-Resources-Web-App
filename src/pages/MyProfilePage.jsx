@@ -31,6 +31,7 @@ import CertificationAdd from '../Components/organisms/CertificationAdd';
 import TablePayrollsData from '../Components/organisms/TablePayrollsData';
 import MyProfileEdit from '../Components/organisms/MyProfileEdit';
 import EmergencyContacts from '../Components/organisms/EmergencyContacts';
+import LinkedAccounts from '../Components/organisms/LinkedAccounts';
 import VacationsSummary from '../Components/organisms/VacationsSummary';
 import ProfileCustomization from '../Components/organisms/ProfileCustomization';
 import HelpButton from '../Components/molecules/HelpButton';
@@ -381,6 +382,10 @@ const MyProfilePage = () => {
                   <Divider />
 
                   <EmergencyContacts userId={userId} />
+
+                  <Divider />
+
+                  <LinkedAccounts />
                 </div>
               )}
 

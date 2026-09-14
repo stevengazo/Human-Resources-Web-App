@@ -23,6 +23,7 @@ import { obtenerFoto } from '../Components/organisms/AvatarUpload';
 import { urlDeArchivo } from '../utils/fileUrl';
 import { useAppContext } from '../context/AppContext';
 import useUnreadMessages from '../hooks/useUnreadMessages';
+import CompanySwitcher from '../Components/molecules/CompanySwitcher';
 
 /**
  * Secciones del portal del colaborador.
@@ -184,6 +185,10 @@ const NavBar = () => {
 
         {/* Acciones */}
         <div className="flex shrink-0 items-center gap-1">
+          <div className="hidden lg:block">
+            <CompanySwitcher />
+          </div>
+
           <ThemeToggle variant="light" />
 
           {/* Menú de usuario (escritorio) */}
@@ -322,6 +327,10 @@ const NavBar = () => {
                 >
                   <X size={22} />
                 </button>
+              </div>
+
+              <div className="mb-5">
+                <CompanySwitcher dark />
               </div>
 
               <nav className="flex flex-col gap-1">
